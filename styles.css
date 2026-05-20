@@ -60,7 +60,10 @@ body {
   margin: 0;
   font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: var(--text);
-  background: #0a0f1a;
+  background-color: #0a0f1a;
+  background-image: radial-gradient(ellipse 150% 120% at 50% -10%, #2a4a6f 0%, #1e3a5f 20%, #142d4f 45%, #0f1a2e 65%, #0a0f1a 85%, #0f172a 100%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   transition: background-color 0.4s var(--ease-2), color 0.4s var(--ease-2);
   position: relative;
   overflow-x: hidden;
@@ -74,7 +77,6 @@ body {
   pointer-events: none;
   z-index: -1;
   overflow: hidden;
-  background: radial-gradient(ellipse 150% 120% at 50% -10%, #2a4a6f 0%, #1e3a5f 20%, #142d4f 45%, #0f1a2e 65%, #0a0f1a 85%, #0f172a 100%);
 }
 
 .noise-layer {
