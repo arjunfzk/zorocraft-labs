@@ -449,21 +449,10 @@
   window.trackVideoEvent = trackVideoEvent;
   window.trackResumeEvent = trackResumeEvent;
 
-  const commandEl = document.getElementById('terminal-command');
-  const commandCursor = document.getElementById('command-cursor');
-  const outputEl = document.getElementById('terminal-output');
-  const finalCursorLine = document.getElementById('final-cursor-line');
-  
-  // Get all paragraph elements for the output
-  const outputParas = Array.from({length: 20}, (_, i) => document.getElementById(`output-p${i + 1}`));
+  // Hero greeting personalization
+  const heroGreeting = document.getElementById('hero-greeting');
 
-  if (commandEl && outputEl && outputParas.every(p => p)) {
-      const commandToType = "./introduce.sh";
-      const terminalBody = document.querySelector('.terminal-body');
-      
-      // Detect mobile device
-      const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
+  if (heroGreeting) {
       // Capitalize first letter of each word, but preserve ALL CAPS
       const capitalizeWords = (str) => {
           return str.split(' ').map(word => {
@@ -475,15 +464,15 @@
               return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
           }).join(' ');
       };
-      
+
       // Parse URL path for personalization
       const parsePersonalization = () => {
           const path = window.location.pathname;
-          
+
           // Safari compatibility: Also check for URL hash as fallback
           const hashPath = window.location.hash.substring(1);
           const currentPath = path || hashPath;
-          
+
           // Match pattern like /firstname_companyname
           const matchWithName = currentPath.match(/^\/([^_\/]+)_([^_\/]+)\/?$/);
           if (matchWithName) {
@@ -491,189 +480,30 @@
               const companyname = capitalizeWords(matchWithName[2].replace(/-/g, ' '));
               return { firstname, companyname, type: 'with-name' };
           }
-          
+
           // Match pattern like /_companyname (no firstname)
           const matchCompanyOnly = currentPath.match(/^\/_([^\/]+)\/?$/);
           if (matchCompanyOnly) {
               const companyname = capitalizeWords(matchCompanyOnly[1].replace(/-/g, ' '));
               return { companyname, type: 'company-only' };
           }
-          
+
           return null;
       };
-      
+
       // Get personalization data
       const personalization = parsePersonalization();
-      
-      // Create personalized greeting
-      const getGreeting = () => {
-          if (personalization) {
-              if (personalization.type === 'with-name') {
-                  return {
-                      text: `Hey ${personalization.firstname},`,
-                      html: `Hey <span class="personalized-name">${personalization.firstname}</span>,`
-                  };
-              } else if (personalization.type === 'company-only') {
-                  return {
-                      text: `Hi Brilliant Minds at ${personalization.companyname},`,
-                      html: `Hi <span class="personalized-name">Brilliant Minds</span> at <span class="personalized-name">${personalization.companyname}</span>,`
-                  };
-              }
+
+      // Set personalized greeting
+      if (personalization) {
+          if (personalization.type === 'with-name') {
+              heroGreeting.innerHTML = `Hey <span class="personalized-name">${personalization.firstname}</span>,`;
+          } else if (personalization.type === 'company-only') {
+              heroGreeting.innerHTML = `Hey <span class="personalized-name">${personalization.companyname}</span> team,`;
           }
-          return { text: "Hey, I'm Arjun.", html: "Hey, I'm Arjun." };
-      };
-      
-      // Create company line for with-name type
-      const getCompanyLine = () => {
-          if (personalization && personalization.type === 'with-name') {
-              return {
-                  text: `Ready for enterprise scale at ${personalization.companyname}.`,
-                  html: `Ready for enterprise scale at <span class="personalized-name">${personalization.companyname}</span>.`
-              };
-          }
-          return null;
-      };
-      
-      // Mobile version - more concise
-      const mobileTexts = [
-          getGreeting(),
-          personalization ? "I am Arjun." : "I build revenue-generating AI products, solo and end-to-end.",
-          "",
-          "// Live Portfolio:",
-          "• 10+ Production iOS Apps",
-          "• 4 with Agentic Backends (RAG & Multi-Step Reasoning)",
-          "",
-          "// Core Experience:",
-          "• 1.5+ years building products from scratch solo.",
-          "• 3.5+ years as a Data Scientist at a Startup.",
-          "",
-          personalization && personalization.type === 'with-name' ? getCompanyLine() : "Proven in startup & solo. Ready for enterprise scale.",
-          "",
-          "↓ Scroll to see the apps in action ↓"
-      ].filter(item => item !== null); // Remove null items
-      
-      // Desktop version - detailed
-      const desktopTexts = [
-          getGreeting(),
-          personalization ? "I am Arjun." : "",
-          "",
-          "I build AI products that generate revenue. Solo. End-to-end.",
-          "",
-          "Live Now:",
-          "10 iOS apps. 4 with production agentic backends—LLM orchestration, RAG pipelines, and multi-step reasoning in real user workflows.",
-          "",
-          "Background:",
-          "4+ years in Data Science → 1.5 years building products from scratch. Design, development, marketing, deployment, optimization, support. Everything.",
-          "",
-          "What that means:",
-          "• I've debugged hallucinations at 2am.",
-          "• Optimized RAG for actual user queries.",
-          "• I've built and shipped AI systems that people pay for.",
-          "",
-          personalization && personalization.type === 'with-name' ? getCompanyLine() : "I've proven the model solo. Now, I want to tackle challenges at a scale that's impossible alone.",
-          "↓ Scroll to see the apps in action ↓"
-      ].filter(item => item !== null); // Remove null items
-      
-      // Choose the appropriate text array based on device
-      const texts = isMobile ? mobileTexts : desktopTexts;
-
-      // Pre-calculate height and width by rendering all text invisibly
-      const preCalculateHeight = () => {
-          const terminalWindow = document.querySelector('.terminal-window');
-          
-          // Temporarily show and populate all paragraphs invisibly
-          outputEl.style.opacity = '0';
-          outputEl.style.visibility = 'visible';
-          finalCursorLine.style.display = 'flex';
-          
-          texts.forEach((content, index) => {
-              // Handle both string and object (with text/html properties)
-              const text = typeof content === 'string' ? content : content.text;
-              const html = typeof content === 'string' ? content : content.html;
-              
-              // Use HTML version for calculation if available
-              if (html !== text) {
-                  outputParas[index].innerHTML = html;
-              } else {
-                  outputParas[index].textContent = text;
-              }
-              
-              // Apply section-header class for proper styling calculation
-              if (text === "Live Now:" || text === "Background:" || text === "What that means:" || 
-                  text === "// Live Portfolio:" || text === "// Core Experience:" || 
-                  text === "↓ Scroll to see the apps in action ↓") {
-                  outputParas[index].classList.add('section-header');
-              }
-          });
-          
-          // Measure the height and width
-          const calculatedHeight = terminalBody.offsetHeight;
-          const calculatedWidth = terminalWindow.offsetWidth;
-          
-          // Set fixed dimensions
-          terminalBody.style.height = `${calculatedHeight}px`;
-          terminalWindow.style.width = `${calculatedWidth}px`;
-          
-          // Clear all text and restore visibility for typewriter effect
-          outputParas.forEach(p => {
-              p.textContent = '';
-              p.innerHTML = '';
-          });
-          outputEl.style.opacity = '1';
-          outputEl.style.visibility = 'hidden';
-          finalCursorLine.style.display = 'none';
-      };
-
-      const typewriter = (element, content, onComplete, speed = 10) => {
-          // Handle both string and object (with text/html properties)
-          const text = typeof content === 'string' ? content : content.text;
-          const html = typeof content === 'string' ? content : content.html;
-          const hasHTML = html !== text;
-          
-          let i = 0;
-          element.textContent = '';
-          const interval = setInterval(() => {
-              if (i < text.length) {
-                  element.textContent += text.charAt(i);
-                  i++;
-              } else {
-                  clearInterval(interval);
-                  
-                  // Replace with HTML version if available
-                  if (hasHTML) {
-                      element.innerHTML = html;
-                  }
-                  
-                  // Add section-header class to specific headers
-                  if (text === "Live Now:" || text === "Background:" || text === "What that means:" || 
-                      text === "// Live Portfolio:" || text === "// Core Experience:" || 
-                      text === "↓ Scroll to see the apps in action ↓") {
-                      element.classList.add('section-header');
-                  }
-                  if (onComplete) setTimeout(onComplete, 50); // Faster delay between lines
-              }
-          }, speed);
-      };
-
-      const typeLinesSequentially = (index = 0) => {
-          if (index < texts.length) {
-              typewriter(outputParas[index], texts[index], () => typeLinesSequentially(index + 1));
-          } else {
-              // All lines typed, show final cursor
-              finalCursorLine.style.display = 'flex';
-          }
-      };
-
-      // Pre-calculate the terminal height before animation starts
-      preCalculateHeight();
-
-      setTimeout(() => {
-          typewriter(commandEl, commandToType, () => {
-              commandCursor.style.display = 'none';
-              outputEl.style.visibility = 'visible';
-              typeLinesSequentially(); // Start typing the output lines
-          }, 30);
-      }, 500);
+      } else {
+          heroGreeting.textContent = "Hey there,";
+      }
   }
 
   const revealObserver = new IntersectionObserver((entries) => {
